@@ -1,0 +1,67 @@
+%REM
+	Agent ProfileReminder
+	Description: Comments for Agent
+%END REM
+Option Public
+Option Declare
+
+
+Sub Initialize
+	
+	'*************** Declaring the DB and notes document***************
+	Dim session As New NotesSession
+	Dim db As NotesDatabase
+	Dim doc As NotesDocument
+	Dim z As Integer
+	Dim x As Integer
+	
+	' ******Initialising date function for today and Incident Creation date calculation ************
+	Dim datetime1 As New NotesDateTime("Today")
+	Dim datetime2 As New NotesDateTime("")
+	Dim view As NotesView
+	Set db=session.CurrentDatabase 	
+	
+	
+    Dim maildc As NotesDocument
+	Dim mailvw As NotesView
+	Set mailvw = db.getview("vwReminderNotification")' Getting handle to the Reminder Notification profile view
+	Set maildc = mailvw.Getfirstdocument()
+	
+	If maildc.HasItem("Frequency") Then
+    'While Not(maildc Is Nothing)
+      ForAll item In maildc.Frequency
+        MessageBox item
+      
+	
+	'If z=item Then 'Condition to check whether the value of z is present as per the specification
+	
+'*****************Below lines of code are added to send mail ******************
+    Dim subject As String
+	Dim mailbody  As Variant
+	Dim messagesent As String
+	Dim newdoc As New NotesDocument(db)
+	Dim richStyle As NotesRichTextStyle
+	Set NewDoc = New NotesDocument( db )
+	Dim rtitem As NotesRichTextItem
+	Set richStyle = session.CreateRichTextStyle
+	Newdoc.form="Memo"
+	Set rtitem = New NotesRichTextItem( newdoc, "Body" )
+	
+	newDoc.Subject = maildc.getitemvalue("Subject")'Getting the subject from the Reminder Notification profile form
+	mailbody = maildc.Getitemvalue("Body")(0) ' Getting the body from the Reminder Notification profile form
+	Call rtitem.appendtext(mailbody)
+
+	newdoc.sendto= maildc.getitemvalue("NotifyPersons") ' Sending mail to the Persons configured in the Notification Profile Form
+	
+	newDoc.Send( False )
+'	End If
+
+	
+	End ForAll
+	'Wend
+	
+	End If
+	'Set doc = view.GetNextDocument(doc) ' Getting handle to the next document present in the Incidents\1.By Incident Number view
+
+
+End Sub
